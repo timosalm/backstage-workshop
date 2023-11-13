@@ -5,6 +5,12 @@ app:
 organization:
   name: My Company
 
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'localKubectlProxy'  
+
 backend:
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
@@ -32,6 +38,9 @@ backend:
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
+  reading:
+    allow:
+      - host: '*.emea.end2end.link'
 integrations:
   github:
     - host: github.com
@@ -74,23 +83,19 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+      - allow:
+        - Component
+        - API
+        - Resource
+        - System
+        - Domain
+        - Location
+        - Group
+        - User
   locations:
-    # Local example data, file locations are relative to the backend process, typically `packages/backend`
-    - type: file
-      target: ../../examples/entities.yaml
-
-    # Local example template
-    - type: file
-      target: ../../examples/template/template.yaml
-      rules:
-        - allow: [Template]
-
-    # Local example organizational data
-    - type: file
-      target: ../../examples/org.yaml
-      rules:
-        - allow: [User, Group]
+     - type: url
+       target: https://github.com/timosalm/tap-spring-developer-workshop/blob/educates/setup/catalog/catalog-info.yaml
+  
 
     ## Uncomment these lines to add more example data
     # - type: url

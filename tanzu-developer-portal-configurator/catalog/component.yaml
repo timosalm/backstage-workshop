@@ -1,0 +1,9 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: tdp-configurator
+  annotations:
+    'backstage.io/kubernetes-label-selector': 'app.kubernetes.io/part-of: tdp-configurator'
+spec:
+  type: service
+  lifecycle: experimental

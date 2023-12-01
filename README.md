@@ -11,6 +11,9 @@ Tanzu Developer Portal is VMware’s commercial Backstage offering.
 - Spin up a TAP developer sandbox session or use an existing TAP 1.7 environment
 https://tanzu.academy/guides/developer-sandbox
 - See prerequisites of the TDP Configurator [here](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-building.html#prerequisites-0)
+- For TDP plugin wrapper creation: 
+  * Node 16 (e.g. installed via [nvm](https://github.com/nvm-sh/nvm))
+  * [Yarn](https://yarnpkg.com/getting-started)
 
 ### Add Custom Plugins using the Tanzu Developer Portal Configurator
 ![Process for TDP customization](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/Images/tap-gui-configurator-images-tdp-install-flowchart.png)
@@ -43,7 +46,7 @@ If you want to provide your TDP plugin wrappers via a private NPM registry you c
 
 Note: Default TAP plug-ins cannot be removed from customized portals, but you can hide them via the `tap-gui.app_config.customize.features` properties in tap-values.yaml.
 
-#### Prepare TDP Workload definition
+#### Prepare and apply TDP Workload definition
 ##### Identify your Configurator image
 To build a customized TDP, you must identify the Configurator image to pass through the supply chain. 
 
@@ -100,7 +103,7 @@ ytt -f tanzu-developer-portal-configurator/tdp-workload-template.yaml -v tdp_con
 ```
 Run `tanzu apps workload tail tdp-config --timestamp --since 1h` to view the build logs or view the status of the supply chain run in your Tanzu Developer Portal.
 
-##### Set the customized TDP image
+#### Set the customized TDP image
 The custom TDP image build takes several minutes. After it finished you can get it via the following command.
 ```
 export CUSTOM_TDP_IMAGE=$(kubectl get images.kpack.io tdp-config -o jsonpath={.status.latestImage}) && echo $CUSTOM_TDP_IMAGE
@@ -115,6 +118,59 @@ With the following command, you will apply a Secret with the YTT overlay. Please
 ytt -f tanzu-developer-portal-configurator/tdp-overlay-secret-template.yaml -v tdp_configurator.custom_image=$CUSTOM_TDP_IMAGE --data-value-yaml tdp_configurator.full_dependencies=false | kubectl apply -n tap-install -f -
 ```
 
+Last but not least, you have to configure the overlay in your `tap-values.yaml` and update your TAP installation.
+```
+profile: full
+tap_gui:
+  ...
+package_overlays:
+- name: tap-gui
+  secrets:
+  - name: tdp-app-image-overlay-secret
+```
 
-#### Creating your own Tanzu Developer Portal plug-in wrapper for an existing Backstage plug-in
-WIP: https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-create-plug-in-wrapper.html
+**If you're using TAP developer sandbox for this workshop**, you can run the following command to directly change the related TAP configuration Secret.
+```
+UPDATED_TAP_VALUES=$(kubectl get secret tap-tap-install-values -n tap-install -o jsonpath='{.data.values\.yaml}' | base64 -d | grep -v '.*#! ' | sed "s/patch-tap-gui-timeout/patch-tap-gui-timeout\n  - name: tdp-app-image-overlay-secret/" | base64 -w0)
+kubectl patch secret tap-tap-install-values -n tap-install --type json -p="[{\"op\" : \"replace\" ,\"path\" : \"/data/values.yaml\" ,\"value\" : ${UPDATED_TAP_VALUES}}]"
+tanzu package installed kick tap -n tap-install -y
+```
+
+#### Discover your custom TDP plugin
+Go to your Tanzu Developer Portal instance, select an available Software Catalog item for a workload and open the added TechInsights plugin tab.
+
+If you don't have a catalog item with Workload available, you can register the one provided with this workshop: `https://github.com/timosalm/backstage-demo/blob/main/tanzu-developer-portal-configurator/catalog/catalog-info.yaml`
+
+### Creating your own Tanzu Developer Portal plugin wrapper for an existing Backstage plug-in
+The [official](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-create-plug-in-wrapper.html
+) documentation for it is WIP. The current state can be viewed [here](https://github.com/benjaminleesmith/docs-tap/blob/main/tap-gui/configurator/create-plug-in-wrapper.hbs.md)
+
+The Backstage plug-in you want to wrap has to be available in a public or private npm registry. 
+
+For this workshop, we'll wrap the [Tech Radar plugin](https://github.com/backstage/backstage/tree/master/plugins/tech-radar), available as a package with the name [@backstage/plugin-tech-radar](https://www.npmjs.com/package/@backstage/plugin-tech-radar) at the public npmjs.com registry. This plug-in only consists of a frontend component.
+
+For the sake of simplicity, we'll use some of the Backstage tooling (`@backstage/create-app` and the backstage-cli).
+
+To set up quickly a Backstage project, we use a utility for creating new apps. The easiest way to run it is via `npx`.
+```
+npx @backstage/create-app@latest --skip-install && cd plugin-wrappers
+```
+As an app name use for this workshop `plugin-wrappers`.
+
+Remove not required folders.
+```
+rm -rf packages examples
+```
+The `packages` directory contains a Backstage app and backend which you only need to build a traditional Backstage app. You also have to remove it from the `workspaces.packages` configuration in the `package.json`.
+```
+  {
+   ... 
+   "workspaces": {
+     "packages": [
+-      "packages/*", # Remove this line
+       "plugins/*"
+     ]
+   }
+  }
+```
+

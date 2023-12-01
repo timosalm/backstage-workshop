@@ -2,6 +2,28 @@
 A workshop that demonstrates the capabilities and challenges of opensource Backstage versus VMware Tanzu Developer Portal.
 
 ## OSS Backstage
+
+### Workshop Prerequisites
+- Node 16 (e.g. installed via [nvm](https://github.com/nvm-sh/nvm))
+- [Yarn](https://yarnpkg.com/getting-started)
+
+To explore the UI and basic features of Backstage you can go to [demo.backstage.io](demo.backstage.io).
+
+If you want to run Backstage on your machine or get started with the development of your Backstage app, I recommend following the [official guide](https://backstage.io/docs/getting-started/).
+
+A new Backstage app can easily be created via the following command.
+```
+npx @backstage/create-app@latest
+```
+Change the directory to the sub-directory that was created based on the app name you chose.
+
+Start the app via the following command.
+```
+yarn dev
+```
+The `yarn dev`` command will run both the frontend and backend as separate processes in the same window.
+
+
 ## Tanzu Developer Portal (TDP)
 [Documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-about.html)
 
@@ -14,6 +36,7 @@ https://tanzu.academy/guides/developer-sandbox
 - For TDP plugin wrapper creation: 
   * Node 16 (e.g. installed via [nvm](https://github.com/nvm-sh/nvm))
   * [Yarn](https://yarnpkg.com/getting-started)
+  * A free https://www.npmjs.com account or a different NPM registry
 
 ### Add Custom Plugins using the Tanzu Developer Portal Configurator
 ![Process for TDP customization](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/Images/tap-gui-configurator-images-tdp-install-flowchart.png)
@@ -141,14 +164,23 @@ Go to your Tanzu Developer Portal instance, select an available Software Catalog
 
 If you don't have a catalog item with Workload available, you can register the one provided with this workshop: `https://github.com/timosalm/backstage-demo/blob/main/tanzu-developer-portal-configurator/catalog/catalog-info.yaml`
 
+#### More advanced setup
+To get an idea of a more advanced setup, you can have a look at mine, which is using GitOps.
+[config/tap-install/portal-configurator](https://github.com/timosalm/tap-gitops-install-emea/tree/main/clusters/main-cluster/cluster-config/config/tap-install/portal-configurator)
+[values/tdp-configurator-values.yaml](https://github.com/timosalm/tap-gitops-install-emea/blob/main/clusters/main-cluster/cluster-config/values/tdp-configurator-values.yaml)
+[values/tap-values.yaml](https://github.com/timosalm/tap-gitops-install-emea/blob/4935e68571f5e5f74c2e5d515646e173d55cb1d9/clusters/main-cluster/cluster-config/values/tap-values.yaml#L117)
+[config/tap-install/supply-chains/portal-configurator.yaml](https://github.com/timosalm/tap-gitops-install-emea/blob/main/clusters/main-cluster/cluster-config/config/tap-install/supply-chains/portal-configurator.yaml)
+
 ### Creating your own Tanzu Developer Portal plugin wrapper for an existing Backstage plug-in
 The [official](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-create-plug-in-wrapper.html
 ) documentation for it is WIP. The current state can be viewed [here](https://github.com/benjaminleesmith/docs-tap/blob/main/tap-gui/configurator/create-plug-in-wrapper.hbs.md)
 
 The Backstage plug-in you want to wrap has to be available in a public or private npm registry. 
 
-For this workshop, we'll wrap the [Tech Radar plugin](https://github.com/backstage/backstage/tree/master/plugins/tech-radar), available as a package with the name [@backstage/plugin-tech-radar](https://www.npmjs.com/package/@backstage/plugin-tech-radar) at the public npmjs.com registry. This plug-in only consists of a frontend component.
+For this workshop, we'll wrap the [Tech Radar plugin](https://github.com/backstage/backstage/tree/master/plugins/tech-radar), available as a package with the name [@backstage/plugin-tech-radar](https://www.npmjs.com/package/@backstage/plugin-tech-radar) at the public npmjs.com registry. This plugin only consists of a frontend component. 
+Sample code is also available in this repository [here](tanzu-developer-portal-configurator/plugin-wrappers).
 
+#### Setup a project
 For the sake of simplicity, we'll use some of the Backstage tooling (`@backstage/create-app` and the backstage-cli).
 
 To set up quickly a Backstage project, we use a utility for creating new apps. The easiest way to run it is via `npx`.
@@ -173,4 +205,149 @@ The `packages` directory contains a Backstage app and backend which you only nee
    }
   }
 ```
+
+Install the dependencies. 
+```
+yarn install --ignore-engines
+```
+
+#### Creating the Tech Radar plug-in TDP wrapper
+
+##### Setup for the TDP wrapper
+Set an environment variable with the name `NPM_REGISTRY_USERNAME` to the username (mine e.g. is [timosalm](https://www.npmjs.com/~timosalm)) of the npmjs.com registry or the prefix for your other registry. 
+```
+cd tanzu-developer-portal-configurator
+yarn backstage-cli new --select plugin --option id=tech-radar-wrapper --scope @${NPM_REGISTRY_USERNAME} --no-private 
+```
+
+Remove not required folders, and create a src directory
+```
+(cd plugins/tech-radar-wrapper && rm -rf dev/ src/ && mkdir src)
+```
+
+Replace the dependencies of your plugin wrapper (`plugins/tech-radar-wrapper/package.json`) with 
+```
+...
+  "dependencies": {
+    "@backstage/plugin-tech-radar": "^0.6.9",
+    "@backstage/core-components": "^0.13.8",
+    "@vmware-tanzu/core-common": "1.0.0",
+    "@vmware-tanzu/core-frontend": "1.0.0",
+    "@material-ui/icons": "^4.9.1",
+    "react-router": "6.0.0-beta.0"
+  },
+...
+```
+You should always check that the version of the plugin you want to wrap is compatible with TDP's Backstage version. For 1.7 this is v1.15. The `@vmware-tanzu/core-common` and `@vmware-tanzu/core-frontend` packages will be used later for the integration between the Backstage plug-in and TDP. The versions of those have to be compatible with your the TAP version.
+
+Install the dependencies. 
+```
+(cd plugins/tech-radar-wrapper && yarn install --ignore-engines)
+```
+
+##### Wrap the Backstage plug-in
+```
+cat > plugins/tech-radar-wrapper/src/TechRadarPlugin.tsx <<EOL
+import { TechRadarPage } from '@backstage/plugin-tech-radar';
+import { AppPluginInterface, AppRouteSurface, SidebarItemSurface } from '@vmware-tanzu/core-frontend';
+import { SurfaceStoreInterface } from '@vmware-tanzu/core-common';
+import { SidebarItem } from '@backstage/core-components';
+import TrackChangesIcon from '@material-ui/icons/TrackChanges';
+import React from 'react';
+import { Route } from 'react-router';
+
+export const TechRadarPlugin: AppPluginInterface =
+  () => (context: SurfaceStoreInterface) => {
+    context.applyWithDependency(
+      AppRouteSurface,
+      SidebarItemSurface,
+      (_appRouteSurface, sidebarItemSurface) => {
+        _appRouteSurface.add(
+          <Route path="/tech-radar"  element={<TechRadarPage width={1500} height={800} />} />
+        )
+        sidebarItemSurface.addMainItem(
+          <SidebarItem icon={TrackChangesIcon} to='tech-radar' text='Tech Radar' />
+        );
+      }
+    );
+  }
+EOL
+```
+The above code accomplishes the same thing as described in the documentation [here](https://www.npmjs.com/package/@backstage/plugin-tech-radar#configuration) for the integration of `@backstage/plugin-tech-radar` into a Backstage app but for an integration with TDP.
+
+The `TechInsightsFrontendPlugin: AppPluginInterface = () => (context: SurfaceStoreInterface)`` => {} code is boilerplate that allows us to interact with the various frontend surfaces in Tanzu Developer Portal
+`context.applyTo` is a function that takes the class of the surface you want to interact with, and a function that is passed the instance of that class.
+The EntityPageSurface keeps track of tabs that appear on the service page. We add a new tab by calling entityPageSurface.servicePage.addTab and passing it the UI component we want it to render
+The TechInsightsFrontendPlugin: AppPluginInterface = () => (context: SurfaceStoreInterface) => {} code is boilerplate that allows us to interact with the various frontend surfaces in Tanzu Developer Portal
+The EntityPageSurface used above is one example of the many surfaces available in Tanzu Developer Portal.
+
+To explore all the surfaces that are currently available checkout the How to use surfaces guide
+For surface API reference documentation see the API documentation for surfaces
+
+---
+You also have to export `TechRadarPlugin` in a specific way to be used by the TDP Configurator.
+```
+cat > plugins/tech-radar-wrapper/src/index.ts <<EOL
+export { TechRadarPlugin as plugin } from './TechRadarPlugin';
+EOL
+```
+
+##### Build and publish your plugin wrapper
+To build all your plugin wrappers at once, you can run the following command. 
+```
+yarn tsc && yarn workspaces run build
+```
+Otherwise, use this command:
+```
+(cd plugins/tech-radar-wrapper && yarn tsc && yarn build)
+```
+
+Log in to your npm registry.
+```
+yarn login
+```
+
+Publish the plugin wrapper:
+```
+(cd plugins/tech-radar-wrapper && yarn publish)
+```
+
+Go back to the parent directory.
+```
+cd ..
+```
+##### Add the new plugin wrapper to the Configurator configuration
+
+Add the plugin wrapper to `tanzu-developer-portal-configuratort/dp-config.yaml`.
+```
+app:
+  plugins:
+    - name: "@vmware-tanzu/tdp-plugin-techinsights"
+      version: "0.0.2"
+    - name: "@<your-npm-registry-username>/plugin-tech-radar-wrapper"
+      version: "0.1.0"
+...
+```
+
+##### Trigger a new custom TDP image build and update the overlay Secret 
+Update the Workload to build the new image.
+```
+ytt -f tanzu-developer-portal-configurator/tdp-workload-template.yaml -v tdp_configurator.image=$(echo $CONFIGURATOR_IMAGE) --data-value-file tdp_configurator.config=tanzu-developer-portal-configurator/tdp-config.yaml | tanzu apps workload apply -y -f -
+```
+
+After the supply chain run finished, update the Secret with the YTT overlay with the new image.
+```
+export CUSTOM_TDP_IMAGE=$(kubectl get images.kpack.io tdp-config -o jsonpath={.status.latestImage}) && echo $CUSTOM_TDP_IMAGE
+kubectl delete secret tdp-app-image-overlay-secret -n tap-install
+ytt -f tanzu-developer-portal-configurator/tdp-overlay-secret-template.yaml -v tdp_configurator.custom_image=$CUSTOM_TDP_IMAGE --data-value-yaml tdp_configurator.full_dependencies=false | kubectl apply -n tap-install -f -
+tanzu package installed kick tap-gui -n tap-install -y
+```
+
+#### Discover your custom TDP plugin
+Go to your Tanzu Developer Portal instance and open the Tech Radar plugin via the sidebar.
+
+
+
+
+
 

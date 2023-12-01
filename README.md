@@ -23,6 +23,11 @@ yarn dev
 ```
 The `yarn dev`` command will run both the frontend and backend as separate processes in the same window.
 
+A sample backstage app is also available in this repository. You can run it with the following commands.
+```
+(cd oss-backstage && yarn install)
+(cd oss-backstage && yarn dev)
+```
 
 ## Tanzu Developer Portal (TDP)
 [Documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-about.html)

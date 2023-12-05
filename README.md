@@ -1,5 +1,5 @@
 # OSS Backstage vs VMware Tanzu Developer Portal Workshop
-A workshop that demonstrates the capabilities and challenges of opensource Backstage versus VMware Tanzu Developer Portal.
+A workshop that demonstrates the capabilities and challenges of open-source Backstage versus VMware Tanzu Developer Portal.
 
 ## OSS Backstage
 
@@ -35,8 +35,8 @@ A sample backstage app is also available in this repository. You can run it with
 Tanzu Developer Portal is VMware’s commercial Backstage offering.
 
 ### Workshop Prerequisites
-- Spin up a TAP developer sandbox session or use an existing TAP 1.7 environment
-https://tanzu.academy/guides/developer-sandbox
+- Spin up a TAP developer sandbox VIP session or use an existing TAP 1.7 environment
+https://tanzu.academy/guides/developer-sandbox-vip
 - See prerequisites of the TDP Configurator [here](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-building.html#prerequisites-0)
 - For TDP plugin wrapper creation: 
   * Node 16 (e.g. installed via [nvm](https://github.com/nvm-sh/nvm))
@@ -44,7 +44,7 @@ https://tanzu.academy/guides/developer-sandbox
   * A free https://www.npmjs.com account or a different NPM registry
 
 ### Add Custom Plugins using the Tanzu Developer Portal Configurator
-![Process for TDP customization](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/Images/tap-gui-configurator-images-tdp-install-flowchart.png)
+![Process for TDP customization](tap-gui-configurator-images-tdp-install-flowchart.png)
 
 [Documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-about.html)
 

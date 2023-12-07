@@ -1,7 +1,7 @@
 # OSS Backstage vs VMware Tanzu Developer Portal Workshop
 A workshop that demonstrates the capabilities and challenges of open-source Backstage versus VMware Tanzu Developer Portal.
 
-[Slides](backstage-tdp.pdf){:target="_blank"}
+[Slides](https://github.com/timosalm/backstage-workshop/blob/main/backstage-tdp.pdf)
 
 ## OSS Backstage
 

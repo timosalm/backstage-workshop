@@ -1,7 +1,15 @@
 # OSS Backstage vs VMware Tanzu Developer Portal Workshop
 A workshop that demonstrates the capabilities and challenges of open-source Backstage versus VMware Tanzu Developer Portal.
 
+[Slides](backstage-tdp.pdf)
+
 ## OSS Backstage
+
+Backstage is an open platform for building developer portals. 
+It is constructed out of three parts:
+- Core: The base functionality.
+- App: The app is an instance of a Backstage app that is deployed and tweaked. The app ties together core functionality with additional plugins.
+- Plugins: Additional functionality to make your Backstage app useful for your company. Plugins can be specific to a company or open-sourced and reusable.
 
 ### Workshop Prerequisites
 - Node 16 (e.g. installed via [nvm](https://github.com/nvm-sh/nvm))
@@ -17,11 +25,10 @@ npx @backstage/create-app@latest
 ```
 Change the directory to the sub-directory that was created based on the app name you chose.
 
-Start the app via the following command.
+Start the app with `yarn dev` command on your local computer, which will run both the frontend and backend as separate processes in the same window.
 ```
 yarn dev
 ```
-The `yarn dev`` command will run both the frontend and backend as separate processes in the same window.
 
 A sample backstage app is also available in this repository. You can run it with the following commands.
 ```
@@ -29,10 +36,32 @@ A sample backstage app is also available in this repository. You can run it with
 (cd oss-backstage && yarn dev)
 ```
 
+A new Backstage app comes with the following core features. Have a look at the documentation to discover the capabilities of those in the related section. 
+- [Backstage Search](https://backstage.io/docs/features/search/)
+- [Backstage Software Catalog](https://backstage.io/docs/features/software-catalog/)
+- [Backstage TechDocs](https://backstage.io/docs/features/techdocs/)
+- [Backstage Software Templates](https://backstage.io/docs/features/software-templates/)
+- [Backstage Kubernetes](https://backstage.io/docs/features/kubernetes/)
+
+In addition, the following plugins are also installed ootb.
+- [API Docs](https://github.com/backstage/backstage/blob/master/plugins/api-docs)
+- [Github Actions](https://github.com/backstage/backstage/tree/master/plugins/github-actions)
+- [Tech Radar](https://github.com/backstage/backstage/tree/master/plugins/tech-radar)
+
+### Add plugins to Backstage
+
+In addition to the core features of Backstage, there is a [large number of open-source plugins available](https://backstage.io/plugins) you can integrate, and you can also [create your own](https://backstage.io/docs/plugins/create-a-plugin).
+
+Here are two examples of how to integrate plugins based on the documentation:
+- [Tech Insights](https://github.com/timosalm/backstage-workshop/commit/2ab19d6ed8d62a6aaf2112425b775d64ed31dc58
+)
+- [Tech Docs](https://github.com/timosalm/backstage-workshop/commit/421a585ad77ec16e960b36e822d3b2cb26d3f3ef
+)
+
 ## Tanzu Developer Portal (TDP)
 [Documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-about.html)
 
-Tanzu Developer Portal is VMware’s commercial Backstage offering.
+Tanzu Developer Portal is VMware’s commercial Backstage offering. In addition to the core features, like the Software Catalog, TechDocs and Search, it provides [several commercial plugins](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-plugins-about.html).
 
 ### Workshop Prerequisites
 - Spin up a TAP developer sandbox VIP session or use an existing TAP 1.7 environment
@@ -48,7 +77,7 @@ https://tanzu.academy/guides/developer-sandbox-vip
 
 [Documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-about.html)
 
-**To integrate [Backstage open-source plugins](https://backstage.io/plugins) into TDP, they have to be wrapped in a small amount of code.** Otherwise, you would need access to the TDP source-code to integrate them in the same way it's done with OSS Backstage.
+**To integrate [Backstage open-source plugins](https://backstage.io/plugins) into TDP, they have to be wrapped in a small amount of code.** Otherwise, you would need access to the TDP source code to integrate them in the same way it's done with OSS Backstage.
 
 #### Prepare the Configurator configuration to define the custom TDP plugins 
 The configuration for the Configuration has to be provided in the following format. Where the `name` value is the npm registry and module name, and the `version` is the desired front-end plug-in version that exists in the npm registry. The recommendation is to save it in a file named `tdp-config.yaml`
@@ -163,7 +192,6 @@ UPDATED_TAP_VALUES=$(kubectl get secret tap-tap-install-values -n tap-install -o
 kubectl patch secret tap-tap-install-values -n tap-install --type json -p="[{\"op\" : \"replace\" ,\"path\" : \"/data/values.yaml\" ,\"value\" : ${UPDATED_TAP_VALUES}}]"
 tanzu package installed kick tap -n tap-install -y
 ```
-
 #### Discover your custom TDP plugin
 Go to your Tanzu Developer Portal instance, select an available Software Catalog item for a workload and open the added TechInsights plugin tab.
 
@@ -243,7 +271,7 @@ Replace the dependencies of your plugin wrapper (`plugins/tech-radar-wrapper/pac
   },
 ...
 ```
-You should always check that the version of the plugin you want to wrap is compatible with TDP's Backstage version. For 1.7 this is v1.15. The `@vmware-tanzu/core-common` and `@vmware-tanzu/core-frontend` packages will be used later for the integration between the Backstage plug-in and TDP. The versions of those have to be compatible with your the TAP version.
+You should always check that the version of the plugin you want to wrap is compatible with TDP's Backstage version. [For 1.7 this is v1.15](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-plugins-about.html#backstage-version-compatibility-6). The `@vmware-tanzu/core-common` and `@vmware-tanzu/core-frontend` packages will be used later for the integration between the Backstage plug-in and TDP. The versions of those have to be compatible with your the TAP version.
 
 Install the dependencies. 
 ```

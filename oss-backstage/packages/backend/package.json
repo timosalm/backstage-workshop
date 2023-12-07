@@ -33,6 +33,8 @@
     "@backstage/plugin-search-backend": "^1.4.6",
     "@backstage/plugin-search-backend-module-pg": "^0.5.15",
     "@backstage/plugin-search-backend-node": "^1.2.10",
+    "@backstage/plugin-tech-insights-backend": "^0.5.21",
+    "@backstage/plugin-tech-insights-backend-module-jsonfc": "^0.1.39",
     "@backstage/plugin-techdocs-backend": "^1.8.0",
     "app": "link:../app",
     "better-sqlite3": "^8.0.0",

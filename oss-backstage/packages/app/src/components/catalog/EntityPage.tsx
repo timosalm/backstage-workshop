@@ -55,6 +55,7 @@ import {
   RELATION_PART_OF,
   RELATION_PROVIDES_API,
 } from '@backstage/catalog-model';
+import { EntityTechInsightsScorecardContent } from '@backstage/plugin-tech-insights';
 
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
@@ -179,6 +180,13 @@ const serviceEntityPage = (
 
     <EntityLayout.Route path="/kubernetes" title="Kubernetes">
       <EntityKubernetesContent refreshIntervalMs={30000} />
+    </EntityLayout.Route>
+
+    <EntityLayout.Route path="/tech-insights" title="TechInsights">
+      <EntityTechInsightsScorecardContent
+        title="TechInsights Scorecard"
+        description="TechInsight's default fact-checkers"
+      />
     </EntityLayout.Route>
   </EntityLayout>
 );

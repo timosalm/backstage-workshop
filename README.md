@@ -15,7 +15,7 @@ It is constructed out of three parts:
 - Node 16 (e.g. installed via [nvm](https://github.com/nvm-sh/nvm))
 - [Yarn](https://yarnpkg.com/getting-started)
 
-To explore the UI and basic features of Backstage, you can go to [demo.backstage.io](demo.backstage.io).
+To explore the UI and basic features of Backstage, you can go to [demo.backstage.io](https://demo.backstage.io).
 
 If you want to run Backstage on your machine or get started with the development of your Backstage app, I recommend following the [official guide](https://backstage.io/docs/getting-started/).
 
@@ -80,7 +80,7 @@ https://tanzu.academy/guides/developer-sandbox-vip. Only VMware employees have a
 **To integrate [Backstage open-source plugins](https://backstage.io/plugins) into TDP, they have to be wrapped in a small amount of code.** Otherwise, you would need access to the TDP source code to integrate them in the same way it's done with OSS Backstage.
 
 #### Prepare the Configurator configuration to define the custom TDP plugins 
-The configuration for the Configuration has to be provided in the following format. Where the `name` value is the npm registry and module name, and the `version` is the desired frontend plug-in version that exists in the npm registry. The recommendation is to save it in a file named `tdp-config.yaml`
+The configuration for the Configurator has to be provided in the following format. Where the `name` value is the npm registry and module name, and the `version` is the desired frontend plug-in version that exists in the npm registry. The recommendation is to save it in a file named `tdp-config.yaml`
 ```
 app:
   plugins:

@@ -93,7 +93,7 @@ backend:
 ```
 **Let's use [this sample](tanzu-developer-portal-configurator/tdp-config.yaml) from the docs.**
 
-[Here](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-tdp-plug-ins-list.html) is a list of currently available official TDP plugin wrappers for easy consumption. 
+[Here](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-plugins-valid-plugins-about.html) is a list of currently available official TDP plugin wrappers for easy consumption. 
 
 More unofficial plugin wrappers are available [here](https://github.com/vrabbi-tap/tdp-plugin-wrappers)
 

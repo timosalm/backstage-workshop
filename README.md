@@ -126,7 +126,7 @@ export IMGPKG_REGISTRY_PASSWORD=$(kubectl get secret -n tap-gui private-registry
 After you're successfully authenticated, run the following command to get the Configurator image.
 ```
 export CONFIGURATOR_IMAGE=$(imgpkg describe -b $CONFIGURATOR_IMAGE_BUNDLE -o yaml --tty=true | grep -A 1 \
-"kbld.carvel.dev/id: harbor-repo.vmware.com/esback/configurator" | grep "image: " | sed 's/^[[:space:]]*image: //g') && echo $CONFIGURATOR_IMAGE
+"kbld.carvel.dev/id:[[:blank:]]*[^[:blank:]]*configurator" | grep "image:" | sed 's/[[:blank:]]*image:[[:blank:]]*//g') && echo $CONFIGURATOR_IMAGE
 ```
 ##### Define and apply Workload
 [Documentation](https://docs.vmware.com/en/VMware-Tanzu-Application-Platform/1.7/tap/tap-gui-configurator-building.html#build-your-customized-portal-3)
